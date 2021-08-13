@@ -8,11 +8,11 @@ from users.managers import CustomUserManager
 class Employee(AbstractUser):
     username = None
     email = models.EmailField(gettext_lazy('email address'), unique=True)
-    first_name = models.CharField(max_length=15)
-    last_name = models.CharField(max_length=15)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()
 

@@ -1,0 +1,23 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account %}
+
+{% block head_title %}{% trans "Deactivate Account" %}{% endblock %}
+
+{% block content %}
+
+    <h1>{% trans "Deactivate Account" %}</h1>
+    {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'account_deactivate' %}" class="account_deactivate">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="{% trans 'Deactivate my account!' %}" />
+    </form>
+    {% endif %}
+
+
+
+
+    <p>{% blocktrans %}Please contact us if you have any trouble deactivating your account.{% endblocktrans %}</p>
+{% endblock %}

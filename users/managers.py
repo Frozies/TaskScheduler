@@ -7,14 +7,19 @@ class CustomUserManager(BaseUserManager):
     Custom user model manager where email is the unique identifier for authentication rather than a username.
     """
 
-    def create_user(self, email, password, **kwargs):
+    def create_user(self, email, password, first_name, last_name, **kwargs):
         """
         Create and save a user with an email and a password.
         """
         if not email:
             raise ValueError(gettext_lazy('Email is required'))
+        if not first_name:
+            raise ValueError(gettext_lazy('First name is required'))
+        if not last_name:
+            raise ValueError(gettext_lazy('Last name is required'))
+
         email = self.normalize_email(email)
-        user = self.model(email=email)
+        user = self.model(email=email, first_name=first_name, last_name=last_name)
         user.set_password(password)
         user.save()
         return user
