@@ -17,10 +17,14 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(gettext_lazy('First name is required'))
         if not last_name:
             raise ValueError(gettext_lazy('Last name is required'))
+        if not password:
+            raise ValueError(gettext_lazy('Password is required'))
 
         email = self.normalize_email(email)
-        user = self.model(email=email, first_name=first_name, last_name=last_name)
+        # Here we setup the new user and save it. Don't forget to pass kwargs, otherwise you wont get superusers...
+        user = self.model(email=email, first_name=first_name, last_name=last_name, **kwargs)
         user.set_password(password)
+        print(user.password)
         user.save()
         return user
 

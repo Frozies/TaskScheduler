@@ -1,57 +1,44 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
 from django.contrib.auth import logout
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.views.generic import View
-from .forms import UserDeactivateForm, UserDeleteForm
+from django.core.validators import validate_email
+from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
+from users.serializers import UserSerializer
 
 
-class UserDeactivateView(LoginRequiredMixin, View):
-    """
-    Deactivates the currently signed-in user by setting is_active to False.
-    """
+@api_view(['POST'])
+def create_user(request):
+    serializer = UserSerializer(data=request.data)
 
-    def get(self, request, *args, **kwargs):
-        form = UserDeactivateForm()
-        return render(request, 'user_deactivation.html', {'form': form})
+    if serializer.is_valid():
+        serializer.save()
 
-    def post(self, request, *args, **kwargs):
-        form = UserDeactivateForm(request.POST)
-        # Form will be valid if checkbox is checked.
-        if form.is_valid():
-            # Make user inactive and save to database.
-            request.user.is_active = False
-            request.user.save()
-            # Log user out.
-            logout(request)
-            # Give them a success message.
-            messages.success(request, 'Account successfully deactivated')
-            # Redirect to home page.
-            return redirect(reverse('home'))
-        return render(request, 'user_deactivation.html', {'form': form})
+    return Response(serializer.data)
 
 
-class UserDeleteView(LoginRequiredMixin, View):
-    """
-    Deletes the currently signed-in user and all associated data.
-    """
+@api_view(['POST'])
+def create_superuser(request):
+    serializer = UserSerializer(data=request.data)
 
-    def get(self, request, *args, **kwargs):
-        form = UserDeleteForm()
-        return render(request, 'user_deletion.html', {'form': form})
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+    else:
+        raise ValidationError(serializer.errors)
 
-    def post(self, request, *args, **kwargs):
-        form = UserDeleteForm(request.POST)
-        # Form will be valid if checkbox is checked.
-        if form.is_valid():
-            user = request.user
-            # Logout before we delete. This will make request.user
-            # unavailable (or actually, it points to AnonymousUser).
-            logout(request)
-            # Delete user (and any associated ForeignKeys, according to
-            # on_delete parameters).
-            user.delete()
-            messages.success(request, 'Account successfully deleted')
-            return redirect(reverse('home'))
-        return render(request, 'user_deletion.html', {'form': form})
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def delete_user(request):
+    user = request.user
+
+    # Logout before we delete. This will make request.user
+    # unavailable (or actually, it points to AnonymousUser).
+    logout(request)
+
+    # Delete user (and any associated ForeignKeys, according to
+    # on_delete parameters).
+    user.delete()
+
+    return Response("Account successfully deleted!")
